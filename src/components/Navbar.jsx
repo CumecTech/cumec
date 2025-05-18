@@ -1,6 +1,6 @@
 // components/Navbar.js
 'use client'
-import React, { useState, useEffect,useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { css } from 'styled-components';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ const NAV_HEIGHT_INITIAL = `${NAV_HEIGHT_INITIAL_NUM}px`;
 const NAV_HEIGHT_FIXED = `${NAV_HEIGHT_FIXED_NUM}px`;
 
 // Define logo dimensions (adjust to your logo's aspect ratio and desired size)
-const LOGO_HEIGHT_INITIAL = 40; 
+const LOGO_HEIGHT_INITIAL = 40;
 const LOGO_WIDTH_INITIAL = 40; // Assuming a 1:1 aspect ratio for simplicity
 const LOGO_HEIGHT_FIXED = 32;
 const LOGO_WIDTH_FIXED = 32;
@@ -83,20 +83,20 @@ const MenuItems = styled.ul`
     background-color: #1a202c;
     transition: left 0.3s ease-in-out, top 0.3s ease-in-out;
     padding: 1rem 0;
-    z-index: 999; 
+    z-index: 999;
     overflow-y: auto;
   }
 `;
 
 const MenuItem = styled.li`
-  margin: 0 0.5rem;
+  margin: 0 0.5rem; // Horizontal spacing for desktop items
   position: relative;
   height: 100%;
   display: flex;
   align-items: center;
 
   @media (max-width: 768px) {
-    margin: 0;
+    margin: 0; // Reset margin for mobile
     width: 100%;
     height: auto;
   }
@@ -116,7 +116,7 @@ const baseLinkStyles = css`
   &:hover {
     color: #63b3ed;
   }
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -129,7 +129,7 @@ const baseLinkStyles = css`
     transform-origin: center; // Animate from center
     transition: transform 0.3s ease;
   }
-  
+
   &:hover::after {
     transform: scaleX(1);
   }
@@ -177,7 +177,7 @@ const DropdownMenu = styled.div`
   clip-path: ${({ isOpen }) => (isOpen ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)')};
   transition: clip-path 0.25s ease-out, opacity 0.25s ease-out, visibility 0.25s ease-out;
   z-index: 20;
-  
+
   @media (max-width: 768px) {
     position: static;
     box-shadow: none;
@@ -206,12 +206,12 @@ const StyledDropdownItemLink = styled(Link)`
   text-decoration: none;
   transition: background-color 0.2s ease, color 0.2s ease;
   font-size: 0.95rem;
-  
+
   &:hover {
     background-color: #2d3748;
     color: #90cdf4;
   }
-  
+
   @media (max-width: 768px) {
     padding: 0.75rem 0 0.75rem 1rem; // Indent for mobile
     &:hover {
@@ -262,17 +262,90 @@ const BurgerBar = styled.div`
   }
 `;
 
-const Navbar = ({ onHeightChange }) => {
+// Styles for Auth Buttons
+const AuthItemBaseStyles = css`
+  ${baseLinkStyles} // Inherit common link styles
+  padding: 0.4rem 1rem; // Adjust padding for button feel
+  border: 1px solid #4a5568;
+  border-radius: 5px;
+  height: auto; // Override full height from baseLinkStyles
+  min-height: calc(${NAV_HEIGHT_FIXED_NUM}px - 28px); // Ensure min height to align with text links
+  display: inline-flex; // For centering text
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.25rem; // Reduced from MenuItem's 0.5rem as button has own padding
+  margin-right: 0.25rem;
+
+
+  &::after { // Remove underline effect from baseLinkStyles
+    display: none;
+  }
+
+  &:hover {
+    background-color: #2d3748; // Darker gray on hover
+    color: #63b3ed; // Hover text color
+    border-color: #63b3ed; // Hover border color
+  }
+
+  @media (max-width: 768px) {
+    width: calc(100% - 4rem); // Full width button minus padding
+    margin: 0.5rem auto; // Center button within the li, with vertical spacing
+    padding: 0.8rem 1rem; // Mobile padding
+    justify-content: center; // Center text on mobile
+    border-color: #4a5568;
+    
+    &:hover {
+      background-color: #2c3548; // Mobile hover
+    }
+  }
+`;
+
+const StyledLoginLink = styled(Link)`
+  ${AuthItemBaseStyles}
+`;
+
+const StyledLogoutButton = styled.button`
+  ${AuthItemBaseStyles}
+  background-color: transparent; // Ensure button bg is transparent initially
+  color: #e2e8f0; // Match link color
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit; // Usually 1rem or browser default for buttons
+`;
+
+const StyledSignupLink = styled(Link)`
+  ${AuthItemBaseStyles}
+  background-color: #3182ce; // Blue background for primary action
+  border-color: #3182ce;
+  color: white;
+
+  &:hover {
+    background-color: #2b6cb0; // Darker blue on hover
+    border-color: #2b6cb0;
+    color: white;
+  }
+  @media (max-width: 768px) {
+    background-color: #3182ce;
+    border-color: #3182ce;
+    color: white;
+    &:hover {
+      background-color: #2c5282; // Darker blue for mobile hover
+    }
+  }
+`;
+
+
+const Navbar = ({ onHeightChange, isAuthenticated = false, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFixed, setIsFixed] = useState(false);
-  const servicesMenuItemRef = (null);
+  const servicesMenuItemRef = useRef(null); // Corrected: Use useRef
+
+  const servicesTimeoutRef = useRef(null);
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
-  
-const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
-  const servicesTimeoutRef = useRef(null);
-  
+
   // Clean up timeout when component unmounts
   useEffect(() => {
     return () => {
@@ -283,92 +356,85 @@ const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   }, []);
 
   const handleServicesMouseEnter = () => {
-    // Check if we're on client-side before accessing window
     if (typeof window !== 'undefined' && window.innerWidth > 768) {
-      if (servicesTimeoutRef.current) {
-        clearTimeout(servicesTimeoutRef.current);
-      }
+      if (servicesTimeoutRef.current) clearTimeout(servicesTimeoutRef.current);
       setServicesDropdownOpen(true);
     }
   };
 
   const handleServicesMouseLeave = () => {
-    // Check if we're on client-side before accessing window
     if (typeof window !== 'undefined' && window.innerWidth > 768) {
       servicesTimeoutRef.current = setTimeout(() => {
         setServicesDropdownOpen(false);
-      }, 150); // Delay to allow moving to dropdown
+      }, 150);
     }
   };
 
-
   const toggleServicesDropdownMobile = (e) => {
-    e.preventDefault(); // Important for the <a> tag
+    e.preventDefault();
     if (window.innerWidth <= 768) {
       setServicesDropdownOpen(!servicesDropdownOpen);
     }
   };
 
-  // Effect for scroll handling
-  // Effect for scroll handling
   useEffect(() => {
     const handleScroll = () => {
       const fixed = window.scrollY > 50;
-      if (fixed !== isFixed) { // 'isFixed' is the state variable from the outer scope
-        setIsFixed(fixed);
-      }
+      if (fixed !== isFixed) setIsFixed(fixed);
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
-
+    handleScroll();
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      // Defensive check: Ensure servicesTimeoutRef itself is not null
-      // and then proceed to clear its .current property (which can be null or a timeout ID)
-      if (servicesTimeoutRef) {
-        clearTimeout(servicesTimeoutRef.current);
-      }
+      if (servicesTimeoutRef.current) clearTimeout(servicesTimeoutRef.current);
     };
-  }, [isFixed]); // Dependency array is correct with just 'isFixed'
-                 // servicesTimeoutRef should not be in the dependency array as the ref object itself is stable.
+  }, [isFixed]);
 
-  // Effect for passing navbar height to parent
   useEffect(() => {
     if (onHeightChange) {
       onHeightChange(isFixed ? NAV_HEIGHT_FIXED_NUM : NAV_HEIGHT_INITIAL_NUM);
     }
   }, [isFixed, onHeightChange]);
 
-  // Effect for mobile menu behavior
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768 && isMobileMenuOpen) closeMobileMenu();
+      if (window.innerWidth > 768 && servicesDropdownOpen) setServicesDropdownOpen(false); // Close dropdown on resize if mobile was open
     };
     if (isMobileMenuOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
-    
+
     window.addEventListener('resize', handleResize);
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('resize', handleResize);
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, servicesDropdownOpen]); // Added servicesDropdownOpen to dependencies
 
-  const logoPath = '/assessts/logo.jpg'; // Path from public folder
+  const logoPath = '/assessts/logo.jpg';
+
+  const handleLogoutClick = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      // Fallback or for local testing if onLogout is not provided
+      console.log("Logout action triggered. Implement onLogout prop.");
+    }
+    closeMobileMenu();
+  };
 
   return (
     <NavContainer isFixed={isFixed} isOpenMobile={isMobileMenuOpen}>
       <Nav isFixed={isFixed}>
         <LogoLink href="/" onClick={closeMobileMenu}>
           <div className="logo-image-container">
-            <Image 
+            <Image
               src={logoPath}
-              alt="CUMEC Logo" 
+              alt="CUMEC Logo"
               width={isFixed ? LOGO_WIDTH_FIXED : LOGO_WIDTH_INITIAL}
               height={isFixed ? LOGO_HEIGHT_FIXED : LOGO_HEIGHT_INITIAL}
-              style={{ borderRadius: '4px' }} // No need to transition width/height here, parent handles it
-              priority // Logo is critical
+              style={{ borderRadius: '4px' }}
+              priority
             />
           </div>
           CUMEC
@@ -384,22 +450,22 @@ const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
           <MenuItem>
             <StyledMenuLink href="/" onClick={closeMobileMenu}>Home</StyledMenuLink>
           </MenuItem>
-          <MenuItem 
+          <MenuItem
             ref={servicesMenuItemRef}
             onMouseEnter={handleServicesMouseEnter}
             onMouseLeave={handleServicesMouseLeave}
           >
-            <DropdownToggleLink 
-              href="#" // Or "/services" if it's a fallback page
+            <DropdownToggleLink
+              href="#"
               onClick={toggleServicesDropdownMobile}
               aria-haspopup="true"
               aria-expanded={servicesDropdownOpen}
             >
               Services <DropdownArrow isOpen={servicesDropdownOpen}>▼</DropdownArrow>
             </DropdownToggleLink>
-            <DropdownMenu 
+            <DropdownMenu
               isOpen={servicesDropdownOpen}
-              onMouseEnter={handleServicesMouseEnter} 
+              onMouseEnter={handleServicesMouseEnter}
               onMouseLeave={handleServicesMouseLeave}
             >
               <StyledDropdownItemLink href="/services/stone-marble" onClick={closeMobileMenu}>Stone & Marble</StyledDropdownItemLink>
@@ -422,6 +488,22 @@ const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
           <MenuItem>
             <StyledMenuLink href="/contact" onClick={closeMobileMenu}>Contact Us</StyledMenuLink>
           </MenuItem>
+
+          {/* Auth Buttons */}
+          {!isAuthenticated ? (
+            <>
+              <MenuItem>
+                <StyledLoginLink href="/auth/login" onClick={closeMobileMenu}>Login</StyledLoginLink>
+              </MenuItem>
+              <MenuItem>
+                <StyledSignupLink href="/auth/signup" onClick={closeMobileMenu}>Sign Up</StyledSignupLink>
+              </MenuItem>
+            </>
+          ) : (
+            <MenuItem>
+              <StyledLogoutButton onClick={handleLogoutClick}>Logout</StyledLogoutButton>
+            </MenuItem>
+          )}
         </MenuItems>
       </Nav>
     </NavContainer>

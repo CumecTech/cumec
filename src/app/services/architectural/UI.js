@@ -5,7 +5,7 @@ const UI = () => {
   const img = '/assessts/heroimg6.jpeg';
   const serviceData = {
     title: "Architectural Support",
-    description: "Comprehensive architectural support services for innovative and sustainable building design.",
+    description: "we provide design concept to building and prepare structural, architectural and landscape drawings for residential, commercial, office spaces, shops, warehouses etc.",
     image: img,
     details: [
       {

@@ -302,9 +302,7 @@ function HeroSection({ isFixed = false }) {
         </HeroSubtitle>
         <ButtonContainer>
           {/* Assuming these buttons might also be links in the future */}
-          <Link href="/services" passHref legacyBehavior>
-            <StyledButton as="a" primary>Our Services</StyledButton>
-          </Link>
+         
           <Link href="/contact" passHref legacyBehavior>
             <StyledButton as="a">Contact Us</StyledButton>
           </Link>
